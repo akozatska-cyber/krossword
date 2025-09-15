@@ -1,155 +1,241 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<title>ПСИХОЛОГІЯ</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .grid {
-    display: grid;
-    gap: 2px;
-    justify-content: center;
-  }
-  .cell {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-  .cell input {
-    width: 100%;
-    height: 100%;
-    border: 1px solid #ccc;
-    text-align: center;
-    font-size: 16px;
-    text-transform: uppercase;
-  }
-  .grey {
-    background: #d3d3d3;
-  }
-  .number {
-    position: absolute;
-    top: 1px;
-    left: 2px;
-    font-size: 10px;
-    color: #000;
-    pointer-events: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Психологічний кросворд</title>
+  <style>
+    :root {
+      --cell-size: 32px;
+      --grid-gap: 1px;
+      --line-color: #bdbdbd;
+      --bg: #f0f0f0;
+      --input-bg: #ffffff;
+      --blocked-bg: #d3d3d3;
+      --ok: #c8e6c9;
+      --bad: #ffcdd2;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: var(--bg); padding: 20px; }
+    h1 { text-align: center; margin-bottom: 16px; }
+    .toolbar { display: flex; gap: 12px; justify-content: center; margin-bottom: 16px; }
+    .grid {
+      display: grid;
+      gap: var(--grid-gap);
+      justify-content: center;
+      background: var(--line-color);
+      padding: var(--grid-gap);
+      width: max-content;
+      margin: 0 auto;
+    }
+    .cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--input-bg);
+    }
+    .cell input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 16px;
+      text-transform: uppercase;
+      background: transparent;
+    }
+    .blocked { background: var(--blocked-bg); }
+    .number {
+      position: absolute; top: 1px; left: 2px;
+      font-size: 10px; color: #000; pointer-events: none;
+    }
+    .legend {
+      max-width: 900px; margin: 20px auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px;
+    }
+    .legend h3 { margin: 0 0 6px 0; font-size: 16px; }
+    .legend ul { margin: 0; padding-left: 18px; }
+    .legend li { margin: 2px 0; }
+  </style>
 </head>
 <body>
+  <h1>ПСИХОЛОГІЯ — кросворд</h1>
 
-<h1>ПСИХОЛОГІЯ</h1>
-<div class="grid" id="grid"></div>
+  <div class="toolbar">
+    <button id="checkBtn">Перевірити відповіді</button>
+    <button id="clearBtn">Очистити все</button>
+  </div>
 
-<script>
-const TEMPLATE = `
-0000000000000000000000000
-0000000000000000002000000
-0000000000000000002000000
-0000000000000000002000000
-0000000000000000002000000
-0000000000000000002000000
-0000000200022222222222220
-0020000200020000002000000
-0020000200020000002000000
-0020000200020000002000000
-0020000200020000000000000
-0022222222222222220000000
-0020000200020000000000000
-0020000200020000200000000
-0000000200222222220000000
-0000000200020000200000000
-0000002222222000200000000
-0000000200020000200000000
-0000000000000000200000000
-0000000000000000200000000
-0000000000000000200000000
-0000000000000000200000000
-0000000000000000200000000
-0000000222222222220000000
-0000000000000000000000000
-`.trim();
+  <div id="grid" class="grid"></div>
 
-// Координати клітинок з номерами: {рядок, колонка, номер}
-const NUMBERED_CELLS = [
-  {r:1, c:18, num:1},
-  {r:6, c:7, num:2},
-  {r:6, c:11, num:3},
-  {r:7, c:2, num:4},
-  {r:11, c:2, num:5},
-  {r:13, c:16, num:6},
-  {r:16, c:6, num:8},
-  {r:14, c:10, num:7},
-  {r:23, c:7, num:9}
-];
+  <div class="legend">
+    <div>
+      <h3>По вертикалі</h3>
+      <ul>
+        <li>1. Внутрішнє спонукання до дії.</li>
+        <li>2. Усвідомлення власного «Я».</li>
+        <li>3. Засвоєний норм і цінностей суспільства.</li>
+        <li>4. Внутрішній світ людини.</li>
+        <li>6. Природжений стиль поведінки.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>По горизонталі</h3>
+      <ul>
+        <li>3. Вибіркова орієнтація інтересів.</li>
+        <li>5. Унікальність особистості людини.</li>
+        <li>7. Сукупність стійких рис особи.</li>
+        <li>8. Окрема людина як представник виду.</li>
+        <li>9. Людина як суб'єкт спілкування.</li>
+      </ul>
+    </div>
+  </div>
 
-const rows = TEMPLATE.split(/\n/);
-const rowCount = rows.length;
-const colCount = rows[0].length;
+  <script>
+    // Фіксований розмір сітки 25x25
+    const GRID_ROWS = 25;
+    const GRID_COLS = 25;
 
-const grid = document.getElementById('grid');
-grid.style.gridTemplateColumns = `repeat(${colCount}, 32px)`;
-grid.style.gridTemplateRows = `repeat(${rowCount}, 32px)`;
+    // Нумерація стартових клітинок (0-індексація)
+    const NUMBERED_CELLS = new Map([
+      ["1,18","1"],  // вертикаль 1
+      ["6,7","2"],   // вертикаль 2
+      ["6,11","3"],  // вертикаль 3 і горизонталь 3 (одна клітинка — один номер)
+      ["7,2","4"],   // вертикаль 4
+      ["11,2","5"],  // горизонталь 5
+      ["13,16","6"], // вертикаль 6
+      ["14,10","7"], // горизонталь 7
+      ["16,6","8"],  // горизонталь 8
+      ["23,7","9"]   // горизонталь 9
+    ]);
 
-for (let r = 0; r < rowCount; r++) {
-  for (let c = 0; c < colCount; c++) {
-    const ch = rows[r][c];
-    const cell = document.createElement('div');
-    cell.className = 'cell';
+    // Відповіді (0-індексація координат)
+    const ANSWERS = {
+      vertical: {
+        1: { word: "МОТИВАЦІЯ", cells: [[1,18],[2,18],[3,18],[4,18],[5,18],[6,18],[7,18],[8,18],[9,18]] },
+        2: { word: "САМОПІЗНАННЯ", cells: [[6,7],[7,7],[8,7],[9,7],[10,7],[11,7],[12,7],[13,7],[14,7],[15,7],[16,7],[17,7],[18,7]] },
+        3: { word: "СОЦІАЛІЗАЦІЯ", cells: [[6,11],[7,11],[8,11],[9,11],[10,11],[11,11],[12,11],[13,11],[14,11],[15,11],[16,11],[17,11]] },
+        4: { word: "ПСИХІКА", cells: [[7,2],[8,2],[9,2],[10,2],[11,2],[12,2],[13,2]] },
+        6: { word: "ТЕМПЕРАМЕНТ", cells: [[13,16],[14,16],[15,16],[16,16],[17,16],[18,16],[19,16],[20,16],[21,16],[22,16],[23,16]] }
+      },
+      horizontal: {
+        3: { word: "СПРЯМОВАНІСТЬ", cells: [[6,11],[6,12],[6,13],[6,14],[6,15],[6,16],[6,17],[6,18],[6,19],[6,20],[6,21],[6,22],[6,23]] },
+        5: { word: "ІНДИВІДУАЛЬНІСТЬ", cells: [[11,2],[11,3],[11,4],[11,5],[11,6],[11,7],[11,8],[11,9],[11,10],[11,11],[11,12],[11,13],[11,14],[11,15],[11,16]] },
+        7: { word: "ХАРАКТЕР", cells: [[14,10],[14,11],[14,12],[14,13],[14,14],[14,15],[14,16],[14,17]] },
+        8: { word: "ІНДИВІД", cells: [[16,6],[16,7],[16,8],[16,9],[16,10],[16,11],[16,12]] },
+        9: { word: "ОСОБИСТІСТЬ", cells: [[23,7],[23,8],[23,9],[23,10],[23,11],[23,12],[23,13],[23,14],[23,15],[23,16],[23,17],[23,18]] }
+      }
+    };
 
-    // Перевірка, чи ця клітинка має номер
-    const numObj = NUMBERED_CELLS.find(n => n.r === r && n.c === c);
-    if (numObj) {
-      const numEl = document.createElement('div');
-      numEl.className = 'number';
-      numEl.textContent = numObj.num;
-      cell.appendChild(numEl);
+    // Збір усіх координат інпутів
+    function collectInputCells(answers) {
+      const set = new Set();
+      for (const group of Object.values(answers)) {
+        for (const { cells } of Object.values(group)) {
+          for (const [r, c] of cells) set.add(`${r},${c}`);
+        }
+      }
+      return set;
     }
 
-    if (ch === '2') {
-      const input = document.createElement('input');
-      input.maxLength = 1;
-      input.addEventListener('input', e => {
-        e.target.value = e.target.value.toUpperCase();
+    // Карта очікуваних літер у кожній клітинці (для перетинів — дві однакові літери)
+    function buildExpectedMap(answers) {
+      const map = new Map(); // key -> Set(expectedLetters)
+      const add = (r, c, ch) => {
+        const k = `${r},${c}`;
+        if (!map.has(k)) map.set(k, new Set());
+        map.get(k).add(ch);
+      };
+      // вертикальні
+      for (const { word, cells } of Object.values(answers.vertical)) {
+        for (let i = 0; i < cells.length; i++) {
+          const [r, c] = cells[i];
+          add(r, c, word[i]);
+        }
+      }
+      // горизонтальні
+      for (const { word, cells } of Object.values(answers.horizontal)) {
+        for (let i = 0; i < cells.length; i++) {
+          const [r, c] = cells[i];
+          add(r, c, word[i]);
+        }
+      }
+      return map;
+    }
+
+    const inputCells = collectInputCells(ANSWERS);
+    const expectedMap = buildExpectedMap(ANSWERS);
+
+    const grid = document.getElementById('grid');
+    grid.style.gridTemplateColumns = `repeat(${GRID_COLS}, var(--cell-size))`;
+    grid.style.gridTemplateRows = `repeat(${GRID_ROWS}, var(--cell-size))`;
+
+    function buildGrid() {
+      grid.innerHTML = "";
+      for (let r = 0; r < GRID_ROWS; r++) {
+        for (let c = 0; c < GRID_COLS; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          const key = `${r},${c}`;
+
+          if (NUMBERED_CELLS.has(key)) {
+            const numEl = document.createElement('div');
+            numEl.className = 'number';
+            numEl.textContent = NUMBERED_CELLS.get(key);
+            cell.appendChild(numEl);
+          }
+
+          if (inputCells.has(key)) {
+            const input = document.createElement('input');
+            input.maxLength = 1;
+            input.addEventListener('input', e => {
+              e.target.value = e.target.value.toUpperCase();
+             
+            });
+            cell.appendChild(input);
+          } else {
+            cell.classList.add('blocked');
+          }
+
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    buildGrid();
+
+    // Побуквена перевірка: порожня — прозора, правильна — зелена, неправильна — червона.
+    // На перетинах літера має входити у всі очікування (вони однакові у коректному кросворді).
+    function checkAll() {
+      for (const [key, expSet] of expectedMap.entries()) {
+        const [r, c] = key.split(',').map(Number);
+        const idx = r * GRID_COLS + c;
+        const input = grid.children[idx]?.querySelector('input');
+        if (!input) continue;
+
+        const val = (input.value || "").toUpperCase();
+        if (val === "") {
+          input.style.backgroundColor = "transparent";
+          continue;
+        }
+        // якщо літера збігається з усіма очікуваними (фактично з єдиною), фарбуємо зелено
+        const isOk = [...expSet].every(ch => ch === val);
+        input.style.backgroundColor = isOk ? "var(--ok)" : "var(--bad)";
+      }
+    }
+
+    function clearAll() {
+      const inputs = grid.querySelectorAll('input');
+      inputs.forEach(inp => {
+        inp.value = "";
+        inp.style.backgroundColor = "transparent";
       });
-      cell.appendChild(input);
-    } else {
-      cell.classList.add('grey');
     }
-    grid.appendChild(cell);
-  }
-}
-</script>
-<div class="clues">
-  <h2>По горизонталі:</h2>
-  <ul style="list-style-type:none; padding-left:0;">
-    <li>3. Вибіркова орієнтація інтересів.</li>
-    <li>5. Унікальність особистості людини.</li>
-    <li>7. Сукупність стійких рис особи.</li>
-    <li>8. Окрема людина як представник виду.</li>
-    <li>9. Людина як суб'єкт спілкування.</li>
-  </ol>
 
-  <h2>По вертикалі:</h2>
-  <ul style="list-style-type:none; padding-left:0;">
-    <li>1. Внутрішнє спонукання до дії.</li>
-    <li>2. Усвідомлення власного «Я».</li>
-    <li>3. Засвоєний норм і цінностей суспільства.</li>
-    <li>4. Внутрішній світ людини.</li>
-    <li>6. Природжений стиль поведінки.</li>
-  </ol>
-</div>
-
+    document.getElementById('checkBtn').addEventListener('click', checkAll);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+  </script>
 </body>
 </html>
